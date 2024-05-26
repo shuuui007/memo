@@ -64,29 +64,6 @@ void draw_painted_rect(double x, double y, double w, double h, const char* text,
 	glFlush();
 }
 
-
-void draw_pole() {
-	glLineWidth(2.5);
-	glBegin(GL_LINES);
-	glColor3f(0.5, 0, 0.1);
-	for (int i = -4; i <= 4; i += 2) {
-		glVertex2f(i, -4);
-		glVertex2f(i, 4);
-
-		glVertex2f(-4, i);
-		glVertex2f(4, i);
-	}
-	glEnd();
-
-	for (int i = -3; i <= 3; i += 2) {
-		for (int j = -3; j <= 3; j += 2) {
-			draw_rect(i, j, 1.6, 1.6, 0.5, 0, 0.1);
-		}
-	}
-	glFlush();
-}
-
-
 struct Point {
 	double x;
 	double y;
@@ -164,8 +141,8 @@ enum MenuState{
 	MENU,
 	PAUSE,
 	PLAY,
-	PLAYPL1,
-	PLAYPL2,
+	PLAY1,
+	PLAY2,
 	LOSS,
 	WIN
 };
@@ -174,43 +151,70 @@ MenuState pastMenuState = MENU;
 
 
 struct H {
-	static vector<Button> button_mas;
-	static vector<Button> plitki;
+	static vector<Button> but_menu_mas;
+	static vector<Button> but_plitki_mas;
 	static vector<int> cards_mas;
 	static vector<int> open_cards_mas;
 	static int cur_num_pl1;
 	static int cur_num_pl2;
+	static int cnt;
 
+};vector<Button> H::but_menu_mas, H::but_plitki_mas(16); vector<int> H::cards_mas = { 0,1,2,3,4,5,6,7,7,6,5,4,3,2,1,0 }, H::open_cards_mas(16, 0); 
+int H::cur_num_pl1 = -1, H::cur_num_pl2 = -1, H::cnt;
 
-};vector<Button> H::button_mas, H::plitki(16); vector<int> H::cards_mas = { 0,1,2,3,4,5,6,7,7,6,5,4,3,2,1,0 }, H::open_cards_mas(16, 0); int H::cur_num_pl1 = -1, H::cur_num_pl2 = -1;
+void draw_pole() {
+	glLineWidth(2.5);
+	glBegin(GL_LINES);
+	glColor3f(0.5, 0, 0.1);
+	for (int i = -4; i <= 4; i += 2) {
+		glVertex2f(i, -4);
+		glVertex2f(i, 4);
 
+		glVertex2f(-4, i);
+		glVertex2f(4, i);
+	}
+	glEnd();
+
+	for (int i = 0; i < 16; ++i) {
+		if (H::open_cards_mas[i] == 0) {
+			draw_rect(H::but_plitki_mas[i].get_center().x, H::but_plitki_mas[i].get_center().y, 1.6, 1.6, 0.5, 0, 0.1);
+		}
+	}
+
+	/*for (int i = -3; i <= 3; i += 2) {
+		for (int j = -3; j <= 3; j += 2) {
+			draw_rect(i, j, 1.6, 1.6, 0.5, 0, 0.1);
+		}
+	}*/
+	glFlush();
+}
 
 void set_button(){
 	Button _start(0, 0.7, 1.1, 0.5, "START");
 	Button _exit(0, 0, 1.1, 0.5, "EXIT");
-	H::button_mas.push_back(_start);
-	H::button_mas.push_back(_exit);
+	H::but_menu_mas.push_back(_start);
+	H::but_menu_mas.push_back(_exit);
 	Button _continue(0, 0.7, 1.7, 0.5, "CONTINUE");
 	Button _restart(0, 0, 1.7, 0.5, "RESTART");
 	Button _exit2(0, -0.7, 1.7, 0.5, "EXIT");
-	H::button_mas.push_back(_continue);
-	H::button_mas.push_back(_restart);
-	H::button_mas.push_back(_exit2);
+	H::but_menu_mas.push_back(_continue);
+	H::but_menu_mas.push_back(_restart);
+	H::but_menu_mas.push_back(_exit2);
 
 	int cnt = 0;
 	for (int i = 3; i >= -3; i -= 2) {
 		for (int j = -3; j <= 3; j += 2) {
-			H::plitki[cnt] = Button(j, i, 1, 1, "");
+			H::but_plitki_mas[cnt] = Button(j, i, 1, 1, "");
 			++cnt;
 		}
 	}
 }
 
 void draw_card(int i) {
-	double x = H::plitki[i].get_center().x, y = H::plitki[i].get_center().y;
+	double x = H::but_plitki_mas[i].get_center().x, y = H::but_plitki_mas[i].get_center().y;
 
 	if (H::cards_mas[i] == 0) { //круг
-		draw_painted_rect(x, y, 2, 2, "", 0.4, 0.8, 1, 2.5, 0.5, 0, 0.1);
+		draw_painted_rect(x, y, 2, 2, "", 0.4, 0.8, 1, 2.5, 1, 0, 0);
 		int pointCount = 50;
 		const float step = float(2 * M_PI / pointCount), r = 0.7;
 		glLineWidth(2.5);
@@ -222,7 +226,7 @@ void draw_card(int i) {
 		glEnd();
 	}
 	else if (H::cards_mas[i] == 1) { //шестиугольник
-		draw_painted_rect(x, y, 2, 2, "", 0.1, 1, 0.5, 2.5, 0.5, 0, 0.1);
+		draw_painted_rect(x, y, 2, 2, "", 0.1, 1, 0.5, 2.5, 1, 0, 0);
 		int pointCount1 = 6;
 		const float step1 = float(2 * M_PI / pointCount1), r1 = 0.7;
 		glLineWidth(2.5);
@@ -234,7 +238,7 @@ void draw_card(int i) {
 		glEnd();
 	}
 	else if (H::cards_mas[i] == 2) { //квадрат
-		draw_painted_rect(x, y, 2, 2, "", 1, 1, 0.7, 2.5, 0.5, 0, 0.1);
+		draw_painted_rect(x, y, 2, 2, "", 1, 1, 0.7, 2.5, 1, 0, 0);
 		double wid = 0.5, high = 0.5;
 		glLineWidth(2.5);
 		glBegin(GL_LINE_LOOP);
@@ -248,7 +252,7 @@ void draw_card(int i) {
 		glEnd();
 	}
 	else if (H::cards_mas[i] == 3) { //ромб
-		draw_painted_rect(x, y, 2, 2, "", 1, 0.6, 1, 2.5, 0.5, 0, 0.1);
+		draw_painted_rect(x, y, 2, 2, "", 1, 0.6, 1, 2.5, 1, 0, 0);
 		double wid = 0.7, high = 0.7;
 		glLineWidth(2.5);
 		glBegin(GL_LINE_LOOP);
@@ -262,7 +266,7 @@ void draw_card(int i) {
 		glEnd();
 	}
 	else if (H::cards_mas[i] == 4) { //крест
-		draw_painted_rect(x, y, 2, 2, "", 0.3, 1, 0.8, 2.5, 0.5, 0, 0.1);
+		draw_painted_rect(x, y, 2, 2, "", 0.3, 1, 0.8, 2.5, 1, 0, 0);
 		double wid = 0.6, high = 0.6;
 		glLineWidth(2.5);
 		glBegin(GL_LINES);
@@ -276,7 +280,7 @@ void draw_card(int i) {
 		glEnd();
 	}
 	else if (H::cards_mas[i] == 5) { //треугольник
-		draw_painted_rect(x, y, 2, 2, "", 0.5, 1, 0.5, 2.5, 0.5, 0, 0.1);
+		draw_painted_rect(x, y, 2, 2, "", 0.5, 1, 0.5, 2.5, 1, 0, 0);
 		glLineWidth(2.5);
 		glBegin(GL_LINE_LOOP);
 		glColor3f(0.5, 0.1, 0);
@@ -286,7 +290,7 @@ void draw_card(int i) {
 		glEnd();
 	}
 	else if (H::cards_mas[i] == 6) { //сердце
-		draw_painted_rect(x, y, 2, 2, "", 0.7, 0.9, 1, 2.5, 0.5, 0, 0.1);
+		draw_painted_rect(x, y, 2, 2, "", 0.7, 0.9, 1, 2.5, 1, 0, 0);
 		glLineWidth(2.5);
 		glBegin(GL_LINE_LOOP);
 		glColor3f(0.3, 0, 0.5);
@@ -299,7 +303,7 @@ void draw_card(int i) {
 		glEnd();
 	}
 	else if (H::cards_mas[i] == 7) { //решетка
-		draw_painted_rect(x, y, 2, 2, "", 1, 0.6, 0.7, 2.5, 0.5, 0, 0.1);
+		draw_painted_rect(x, y, 2, 2, "", 1, 0.6, 0.7, 2.5, 1, 0, 0);
 		double w = 0.7, m=0.2;
 		glLineWidth(2.5);
 		glBegin(GL_LINES);
@@ -323,21 +327,31 @@ void draw_card(int i) {
 
 void display() {
 	glClear(GL_COLOR_BUFFER_BIT);
+	//glClearColor(1, 0.85, 0.7, 1);
+
+
+
+	for (int i = 0; i < 16; i++) {
+		if (H::open_cards_mas[i] == 1) {
+			draw_card(i);
+		}
+	}
+
 	draw_pole();
 
 	switch (currentMenuState) {
 	case MENU:
 		draw_painted_rect(0, 0, 2.8, 2.8, "", 0.5, 0, 0.1, 2);
-		H::button_mas[0].drawButton(1, 1, 1, 1, 0, 0, 0, 0.12, 0.15);
-		H::button_mas[1].drawButton(1, 1, 1, 1, 0, 0, 0, 0.24, 0.15);
+		H::but_menu_mas[0].drawButton(1, 1, 1, 1, 0, 0, 0, 0.12, 0.15);
+		H::but_menu_mas[1].drawButton(1, 1, 1, 1, 0, 0, 0, 0.24, 0.15);
 		break;
 		/*case PAUSE:
 			draw_painted_rect(0, 0, 2.8, 2.8, "", 0.5, 0, 0.1, 2);
-			H::button_mas[2].drawButton(1, 1, 1, 1, 0, 0, 0, 0.12, 0.15);
-			H::button_mas[3].drawButton(1, 1, 1, 1, 0, 0, 0, 0.24, 0.15);
-			H::button_mas[4].drawButton(1, 1, 1, 1, 0, 0, 0, 0.54, 0.15);
+			H::but_menu_mas[2].drawButton(1, 1, 1, 1, 0, 0, 0, 0.12, 0.15);
+			H::but_menu_mas[3].drawButton(1, 1, 1, 1, 0, 0, 0, 0.24, 0.15);
+			H::but_menu_mas[4].drawButton(1, 1, 1, 1, 0, 0, 0, 0.54, 0.15);
 			break;*/
-			/*case PLAYPL1:
+			/*case PLAY1:
 				draw_card(H::cur_num_pl1);
 				break;
 			*/
@@ -352,47 +366,50 @@ void MousePressed(int button, int state, int x, int y) {
 	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
 		switch (currentMenuState) {
 		case MENU:
-			if (H::button_mas[0].isButtonHovered(xy)) {
+			if (H::but_menu_mas[0].isButtonHovered(xy)) {
 				currentMenuState = PLAY;
 				display();
 			}
-			else if (H::button_mas[1].isButtonHovered(xy)) {
+			else if (H::but_menu_mas[1].isButtonHovered(xy)) {
 				exit(0);
 			}
 			break;
 		case PAUSE:
-			if (H::button_mas[2].isButtonHovered(xy)) {
+			if (H::but_menu_mas[2].isButtonHovered(xy)) {
 				currentMenuState = pastMenuState;
 				display();
 			}
-			else if (H::button_mas[3].isButtonHovered(xy)) {
+			else if (H::but_menu_mas[3].isButtonHovered(xy)) {
 				currentMenuState = PLAY;
+				H::open_cards_mas.clear();
+				H::open_cards_mas.resize(16, 0);
 				display();
 			}
-			else if (H::button_mas[4].isButtonHovered(xy)) {
+			else if (H::but_menu_mas[4].isButtonHovered(xy)) {
 				exit(0);
 			}
 			break;
 		case PLAY:
 			for (int i = 0; i < 16; ++i) {
-				if (H::plitki[i].isButtonHovered(xy)) {
+				if (H::but_plitki_mas[i].isButtonHovered(xy) && H::open_cards_mas[i]==0) {
 					H::cur_num_pl1 = i;
 					draw_card(H::cur_num_pl1);
-					currentMenuState = PLAYPL1;
+					currentMenuState = PLAY1;
 					//display();
 					break;
 				}
 			}
-		case PLAYPL1:
+		case PLAY1:
 			for (int i = 0; i < 16; ++i) {
-				if (H::plitki[i].isButtonHovered(xy) && H::cur_num_pl1!=i) {
+				if (H::but_plitki_mas[i].isButtonHovered(xy) && H::cur_num_pl1!=i && H::open_cards_mas[i] == 0) {
 					H::cur_num_pl2 = i;
 					draw_card(H::cur_num_pl2);
 					if (H::cards_mas[H::cur_num_pl1] == H::cards_mas[H::cur_num_pl2]) {
 						H::open_cards_mas[H::cur_num_pl1] = 1;
-						H::open_cards_mas[H::cur_num_pl1] = 2;
+						H::open_cards_mas[H::cur_num_pl2] = 1;
 					}
-					currentMenuState = PLAY;
+					H::cnt = 0;
+					currentMenuState = PLAY2;
 					//display();
 					break;
 				}
@@ -403,14 +420,14 @@ void MousePressed(int button, int state, int x, int y) {
 }
 
 void keyboard(unsigned char key, int x, int y){
-	if (currentMenuState == PLAY || currentMenuState == PLAYPL1 || currentMenuState == PLAYPL2) {
+	if (currentMenuState == PLAY || currentMenuState == PLAY1 || currentMenuState == PLAY2) {
 		if (key == 32) {
 			pastMenuState = currentMenuState;
 			currentMenuState = PAUSE;
 			draw_painted_rect(0, 0, 2.8, 2.8, "", 0.5, 0, 0.1, 2);
-			H::button_mas[2].drawButton(1, 1, 1, 1, 0, 0, 0, 0.12, 0.15);
-			H::button_mas[3].drawButton(1, 1, 1, 1, 0, 0, 0, 0.24, 0.15);
-			H::button_mas[4].drawButton(1, 1, 1, 1, 0, 0, 0, 0.54, 0.15);
+			H::but_menu_mas[2].drawButton(1, 1, 1, 1, 0, 0, 0, 0.12, 0.15);
+			H::but_menu_mas[3].drawButton(1, 1, 1, 1, 0, 0, 0, 0.24, 0.15);
+			H::but_menu_mas[4].drawButton(1, 1, 1, 1, 0, 0, 0, 0.54, 0.15);
 		}
 	}
 }
@@ -418,8 +435,15 @@ void keyboard(unsigned char key, int x, int y){
 
 
 void timer(int) {
-	display();
+	//display();
 	glutTimerFunc(100, timer, 0);
+	if (currentMenuState == PLAY2) {
+		++H::cnt;
+		if (H::cnt == 4) {
+			currentMenuState = PLAY;
+			display();
+		}
+	}
 }
 
 int main(int argc, char** argv) {
@@ -438,7 +462,7 @@ int main(int argc, char** argv) {
 	glutDisplayFunc(display);
 	glutKeyboardFunc(keyboard);
 	glutMouseFunc(MousePressed);
-	//glutTimerFunc(100, timer, 0);
+	glutTimerFunc(100, timer, 0);
 	glutMainLoop();
 
 	return 0;

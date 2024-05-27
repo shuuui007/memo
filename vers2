@@ -1,4 +1,4 @@
-#include <iostream>
+ #include <iostream>
 #include <vector>
 #include <string>
 #include "glut.h"
@@ -159,8 +159,8 @@ struct H {
 	static int cur_num_pl2;
 	static int cnt_timer, cnt_open_card, cnt_live;
 
-};vector<Button> H::but_menu_mas, H::but_plitki_mas(16); vector<int> H::cards_mas = { 0,1,2,3,4,5,6,7,7,6,5,4,3,2,1,0 }, H::open_cards_mas(16, 0); 
-int H::cur_num_pl1 = -1, H::cur_num_pl2 = -1, H::cnt_timer, H::cnt_open_card=0, H::cnt_live=8;
+};vector<Button> H::but_menu_mas, H::but_plitki_mas(16); vector<int> H::cards_mas = { 0,1,2,3,4,5,6,7,0,1,2,4,3,5,6,7 }, H::open_cards_mas(16, 0); 
+int H::cur_num_pl1 = -1, H::cur_num_pl2 = -1, H::cnt_timer, H::cnt_open_card=0, H::cnt_live=9;
 
 void draw_pole() {
 	glLineWidth(2.5);
@@ -183,7 +183,18 @@ void draw_pole() {
 	glFlush();
 }
 
+void shuffle(){
+	srand(time(NULL));
+	for (int i = H::cards_mas.size() - 1; i >= 1; i--){
+		int j = rand() % (i + 1);
+		int tmp = H::cards_mas[j];
+		H::cards_mas[j] = H::cards_mas[i];
+		H::cards_mas[i] = tmp;
+	}
+}
+
 void set_button(){
+	shuffle();
 	Button _start(0, 0.7, 1.1, 0.5, "START");
 	Button _exit(0, 0, 1.1, 0.5, "EXIT");
 	H::but_menu_mas.push_back(_start);
@@ -370,15 +381,9 @@ void display() {
 		H::but_menu_mas[4].drawButton(1, 1, 1, 1, 0, 0, 0, 0.54, 0.15);
 		H::but_menu_mas[6].drawButton(0.5, 0, 0.1, 1, 0.5, 0, 0.1, 0.24, 0.15, 1, 1, 1);
 		break;
-		//case PLAY:
-		//	if (H::cur_num_pl1 != -1) {
-		//		draw_card(H::cur_num_pl1);
-		//	}
-		//	break;
 	case PLAY1:
 		if (H::cur_num_pl1 != -1) {
 			draw_card(H::cur_num_pl1);
-			//draw_card(H::cur_num_pl2);
 		}
 		break;
 	case PLAY2:
@@ -415,8 +420,9 @@ void MousePressed(int button, int state, int x, int y) {
 				currentMenuState = PLAY;
 				H::open_cards_mas.clear();
 				H::open_cards_mas.resize(16, 0);
+				shuffle();
 				H::cnt_open_card = 0;
-				H::cnt_live = 8;
+				H::cnt_live = 9;
 				display();
 			}
 			else if (H::but_menu_mas[4].isButtonHovered(xy)) {
@@ -428,8 +434,9 @@ void MousePressed(int button, int state, int x, int y) {
 				currentMenuState = PLAY;
 				H::open_cards_mas.clear();
 				H::open_cards_mas.resize(16, 0);
+				shuffle();
 				H::cnt_open_card = 0;
-				H::cnt_live = 8;
+				H::cnt_live = 9;
 				display();
 			}
 			else if (H::but_menu_mas[4].isButtonHovered(xy)) {
@@ -441,8 +448,9 @@ void MousePressed(int button, int state, int x, int y) {
 				currentMenuState = PLAY;
 				H::open_cards_mas.clear();
 				H::open_cards_mas.resize(16, 0);
+				shuffle();
 				H::cnt_open_card = 0;
-				H::cnt_live = 8;
+				H::cnt_live = 9;
 				display();
 			}
 			else if (H::but_menu_mas[4].isButtonHovered(xy)) {
@@ -455,7 +463,6 @@ void MousePressed(int button, int state, int x, int y) {
 					H::cur_num_pl1 = i;
 					draw_card(H::cur_num_pl1);
 					currentMenuState = PLAY1;
-					//display();
 					break;
 				}
 			}
@@ -484,7 +491,6 @@ void MousePressed(int button, int state, int x, int y) {
 					}
 					H::cnt_timer = 0;
 					currentMenuState = PLAY2;
-					//display();
 					break;
 				}
 			}
@@ -509,7 +515,6 @@ void keyboard(unsigned char key, int x, int y){
 
 
 void timer(int) {
-	//display();
 	glutTimerFunc(100, timer, 0);
 	if (currentMenuState == PLAY2) {
 		++H::cnt_timer;
@@ -523,7 +528,7 @@ void timer(int) {
 int main(int argc, char** argv) {
 	setlocale(LC_ALL, "rus");
 	glutInit(&argc, argv);
-	glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB); // GLUT_DOUBLE GLUT_SINGLE
+	glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
 	glutInitWindowSize(700, 700);
 	glutInitWindowPosition(0, 0);
 	glutCreateWindow("");
@@ -532,6 +537,7 @@ int main(int argc, char** argv) {
 	glOrtho(-4, 4, -4, 4, -4, 1);
 
 	set_button();
+	shuffle();
 
 	glutDisplayFunc(display);
 	glutKeyboardFunc(keyboard);

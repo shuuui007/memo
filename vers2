@@ -140,6 +140,7 @@ public:
 enum MenuState {
 	MENU,
 	LEVEL,
+	PLITK,
 	PAUSE,
 	PLAY,
 	PLAY1,
@@ -158,31 +159,10 @@ struct H {
 	static vector<int> open_cards_mas;
 	static int cur_num_pl1;
 	static int cur_num_pl2;
-	static int cnt_timer, cnt_open_card, cnt_live, level_cnt_live;
+	static int cnt_timer, cnt_open_card, cnt_live, level_cnt_live, num_plitki;
 
-}; vector<Button> H::but_menu_mas, H::but_plitki_mas(16); vector<int> H::cards_mas = { 0,1,2,3,4,5,6,7,0,1,2,4,3,5,6,7 }, H::open_cards_mas(16, 0);
-int H::cur_num_pl1 = -1, H::cur_num_pl2 = -1, H::cnt_timer, H::cnt_open_card = 0, H::cnt_live = 9, H::level_cnt_live=9;
-
-void draw_pole() {
-	glLineWidth(2.5);
-	glBegin(GL_LINES);
-	glColor3f(0.5, 0, 0.1);
-	for (int i = -4; i <= 4; i += 2) {
-		glVertex2f(i, -4);
-		glVertex2f(i, 4);
-
-		glVertex2f(-4, i);
-		glVertex2f(4, i);
-	}
-	glEnd();
-
-	for (int i = 0; i < 16; ++i) {
-		if (H::open_cards_mas[i] == 0) {
-			draw_rect(H::but_plitki_mas[i].get_center().x, H::but_plitki_mas[i].get_center().y, 1.6, 1.6, 0.5, 0, 0.1);
-		}
-	}
-	glFlush();
-}
+}; vector<Button> H::but_menu_mas, H::but_plitki_mas; vector<int> H::cards_mas, H::open_cards_mas;
+int H::cur_num_pl1 = -1, H::cur_num_pl2 = -1, H::cnt_timer, H::cnt_open_card = 0, H::cnt_live = 0, H::level_cnt_live = 0, H::num_plitki = 0;
 
 void shuffle() {
 	srand(time(NULL));
@@ -194,35 +174,94 @@ void shuffle() {
 	}
 }
 
+void plitki_set() {
+	H::but_plitki_mas.resize(H::num_plitki);
+	H::cards_mas.resize(H::num_plitki);
+	H::open_cards_mas.resize(H::num_plitki, 0);
+
+	if (H::num_plitki == 16) {
+		int cnt = 0;
+		for (int i = 3; i >= -3; i -= 2) {
+			for (int j = -3; j <= 3; j += 2) {
+				H::but_plitki_mas[cnt] = Button(j, i, 2, 2, "");
+				++cnt;
+			}
+		}
+	}
+	else if (H::num_plitki == 12) {
+		int cnt = 0;
+		for (int i = 2; i >= -2; i -= 2) {
+			for (int j = -3; j <= 3; j += 2) {
+				H::but_plitki_mas[cnt] = Button(j, i, 2, 2, "");
+				++cnt;
+			}
+		}
+	}
+	else if (H::num_plitki == 8) {
+		int cnt = 0;
+		for (int i = 1; i >= -1; i -= 2) {
+			for (int j = -3; j <= 3; j += 2) {
+				H::but_plitki_mas[cnt] = Button(j, i, 2, 2, "");
+				++cnt;
+			}
+		}
+	}
+
+	for (int i = 0; i < H::num_plitki; ++i) {
+		H::cards_mas[i] = i / 2;
+	}
+	shuffle();
+}
+
+void draw_pole() {
+	//glLineWidth(2.5);
+	//glBegin(GL_LINES);
+	//glColor3f(0.5, 0, 0.1);
+	//for (int i = -4; i <= 4; i += 2) {
+	//	glVertex2f(i, -4);
+	//	glVertex2f(i, 4);
+
+	//	glVertex2f(-4, i);
+	//	glVertex2f(4, i);
+	//}
+	//glEnd();
+
+	for (int i = 0; i < H::num_plitki; ++i) {
+		draw_rect(H::but_plitki_mas[i].get_center().x, H::but_plitki_mas[i].get_center().y, 2, 2, 0.5, 0, 0.1, 2.5);
+		if (H::open_cards_mas[i] == 0) {
+			draw_rect(H::but_plitki_mas[i].get_center().x, H::but_plitki_mas[i].get_center().y, 1.6, 1.6, 0.5, 0, 0.1);
+		}
+	}
+	glFlush();
+}
+
 void set_button() {
-	Button _start(0, 0.7, 1.1, 0.5, "START");
+	Button _start(0, 0.7, 1.1, 0.5, "START");//0
 	Button _exit(0, 0, 1.1, 0.5, "EXIT");
 	H::but_menu_mas.push_back(_start);
 	H::but_menu_mas.push_back(_exit);
-	Button _continue(0, 0.7, 1.7, 0.5, "CONTINUE");
+	Button _continue(0, 0.7, 1.7, 0.5, "CONTINUE");//2
 	Button _restart(0, 0, 1.7, 0.5, "RESTART");
 	Button _menu(0, -0.7, 1.7, 0.5, "MENU");
 	H::but_menu_mas.push_back(_continue);
 	H::but_menu_mas.push_back(_restart);
 	H::but_menu_mas.push_back(_menu);
-	Button _win(0, 0.7, 1.1, 0.5, "WIN!");
+	Button _win(0, 0.7, 1.1, 0.5, "WIN!");//5
 	H::but_menu_mas.push_back(_win);
-	Button _loss(0, 0.7, 1.1, 0.5, "LOSS :(");
+	Button _loss(0, 0.7, 1.1, 0.5, "LOSS :(");//6
 	H::but_menu_mas.push_back(_loss);
-	Button _easy(0, 0.7, 1.7, 0.5, "EASY");
+	Button _easy(0, 0.7, 1.7, 0.5, "EASY");//7
 	Button _normal(0, 0, 1.7, 0.5, "NORMAL");
 	Button _unreal(0, -0.7, 1.7, 0.5, "UNREAL");
 	H::but_menu_mas.push_back(_easy);
 	H::but_menu_mas.push_back(_normal);
 	H::but_menu_mas.push_back(_unreal);
-
-	int cnt = 0;
-	for (int i = 3; i >= -3; i -= 2) {
-		for (int j = -3; j <= 3; j += 2) {
-			H::but_plitki_mas[cnt] = Button(j, i, 2, 2, "");
-			++cnt;
-		}
-	}
+	Button _24(0, 0.7, 1.1, 0.5, "2*4");//10
+	Button _34(0, 0, 1.1, 0.5, "3*4");
+	Button _44(0, -0.7, 1.1, 0.5, "4*4");
+	H::but_menu_mas.push_back(_24);
+	H::but_menu_mas.push_back(_34);
+	H::but_menu_mas.push_back(_44);
 }
 
 void draw_live() {
@@ -360,7 +399,7 @@ void draw_card(int i) {
 void display() {
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	for (int i = 0; i < 16; i++) {
+	for (int i = 0; i < H::num_plitki; i++) {
 		if (H::open_cards_mas[i] == 1) {
 			draw_card(i);
 		}
@@ -374,12 +413,31 @@ void display() {
 		draw_painted_rect(0, 0, 2.8, 2.8, "", 0.5, 0, 0.1, 2);
 		H::but_menu_mas[0].drawButton(1, 1, 1, 1, 0, 0, 0, 0.12, 0.15);
 		H::but_menu_mas[1].drawButton(1, 1, 1, 1, 0, 0, 0, 0.24, 0.15);
+		for (double x = -0.7, y = -0.7; x <= 1; x += 0.7) {
+			glLineWidth(1);
+			glBegin(GL_POLYGON);
+			glColor3f(0.3, 1, 0.8);
+			glVertex2f(x, y + 0.06);
+			glVertex2f(x + 0.15, y + 0.16);
+			glVertex2f(x + 0.23, y);
+			glVertex2f(x, y - 0.23);
+			glVertex2f(x - 0.23, y);
+			glVertex2f(x - 0.15, y + 0.16);
+			glEnd();
+			glFlush();
+		}
 		break;
 	case LEVEL:
 		draw_painted_rect(0, 0, 2.8, 2.8, "", 0.5, 0, 0.1, 2);
 		H::but_menu_mas[7].drawButton(1, 1, 1, 1, 0, 0, 0, 0.50, 0.15);
 		H::but_menu_mas[8].drawButton(1, 1, 1, 1, 0, 0, 0, 0.24, 0.15);
 		H::but_menu_mas[9].drawButton(0.3, 0.9, 0.2, 1, 0, 0, 0, 0.28, 0.15);
+		break;
+	case PLITK:
+		draw_painted_rect(0, 0, 2.8, 2.8, "", 0.5, 0, 0.1, 2);
+		H::but_menu_mas[10].drawButton(1, 1, 1, 1, 0, 0, 0, 0.34, 0.15);
+		H::but_menu_mas[11].drawButton(1, 1, 1, 1, 0, 0, 0, 0.34, 0.15);
+		H::but_menu_mas[12].drawButton(1, 1, 1, 1, 0, 0, 0, 0.34, 0.15);
 		break;
 	case WIN:
 		draw_painted_rect(0, 0, 2.8, 2.8, "", 0.5, 0, 0.1, 2);
@@ -412,36 +470,56 @@ void MousePressed(int button, int state, int x, int y) {
 	double x0 = (x - 350) / 350. * 4;
 	double y0 = -(y - 350) / 350. * 4;
 	Point xy(x0, y0);
+	int flag = 0;
 	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
 		switch (currentMenuState) {
 		case MENU:
 			if (H::but_menu_mas[0].isButtonHovered(xy)) {
 				H::open_cards_mas.clear();
-				H::open_cards_mas.resize(16, 0);
-				shuffle();
 				H::cnt_open_card = 0;
-				currentMenuState = LEVEL;
+				H::num_plitki = 0;
+				currentMenuState = PLITK;
 				display();
 			}
 			else if (H::but_menu_mas[1].isButtonHovered(xy)) {
 				exit(0);
 			}
 			break;
+		case PLITK:
+			if (H::but_menu_mas[10].isButtonHovered(xy)) {
+				H::num_plitki = 8;
+				flag = 1;
+			}
+			else if (H::but_menu_mas[11].isButtonHovered(xy)) {
+				H::num_plitki = 12;
+				flag = 1;
+			}
+			else if (H::but_menu_mas[12].isButtonHovered(xy)) {
+				H::num_plitki = 16;
+				flag = 1;
+			}
+
+			if (flag) {
+				plitki_set();
+				currentMenuState = LEVEL;
+				display();
+			}
+			break;
 		case LEVEL:
 			if (H::but_menu_mas[7].isButtonHovered(xy)) {
-				H::level_cnt_live = 12;
-				H::cnt_live = H::level_cnt_live;
-				currentMenuState = PLAY;
-				display();
+				H::level_cnt_live = H::num_plitki / 4 * 3;
+				flag = 1;
 			}
 			else if (H::but_menu_mas[8].isButtonHovered(xy)) {
-				H::level_cnt_live = 9;
-				H::cnt_live = H::level_cnt_live;
-				currentMenuState = PLAY;
-				display();
+				H::level_cnt_live = H::num_plitki / 2;
+				flag = 1;
 			}
 			else if (H::but_menu_mas[9].isButtonHovered(xy)) {
-				H::level_cnt_live = 3;
+				H::level_cnt_live = H::num_plitki / 4;
+				flag = 1;
+			}
+
+			if (flag) {
 				H::cnt_live = H::level_cnt_live;
 				currentMenuState = PLAY;
 				display();
@@ -455,7 +533,7 @@ void MousePressed(int button, int state, int x, int y) {
 			else if (H::but_menu_mas[3].isButtonHovered(xy)) {
 				currentMenuState = PLAY;
 				H::open_cards_mas.clear();
-				H::open_cards_mas.resize(16, 0);
+				H::open_cards_mas.resize(H::num_plitki, 0);
 				shuffle();
 				H::cnt_open_card = 0;
 				H::cnt_live = H::level_cnt_live;
@@ -463,6 +541,8 @@ void MousePressed(int button, int state, int x, int y) {
 			}
 			else if (H::but_menu_mas[4].isButtonHovered(xy)) {
 				currentMenuState = MENU;
+				H::cnt_open_card = 0;
+				H::num_plitki = 0;
 				display();
 			}
 			break;
@@ -470,7 +550,7 @@ void MousePressed(int button, int state, int x, int y) {
 			if (H::but_menu_mas[3].isButtonHovered(xy)) {
 				currentMenuState = PLAY;
 				H::open_cards_mas.clear();
-				H::open_cards_mas.resize(16, 0);
+				H::open_cards_mas.resize(H::num_plitki, 0);
 				shuffle();
 				H::cnt_open_card = 0;
 				H::cnt_live = H::level_cnt_live;
@@ -478,6 +558,8 @@ void MousePressed(int button, int state, int x, int y) {
 			}
 			else if (H::but_menu_mas[4].isButtonHovered(xy)) {
 				currentMenuState = MENU;
+				H::cnt_open_card = 0;
+				H::num_plitki = 0;
 				display();
 			}
 			break;
@@ -485,19 +567,21 @@ void MousePressed(int button, int state, int x, int y) {
 			if (H::but_menu_mas[3].isButtonHovered(xy)) {
 				currentMenuState = PLAY;
 				H::open_cards_mas.clear();
-				H::open_cards_mas.resize(16, 0);
+				H::open_cards_mas.resize(H::num_plitki, 0);
 				shuffle();
 				H::cnt_open_card = 0;
-				H::cnt_live = 9;
+				H::cnt_live = H::level_cnt_live;
 				display();
 			}
 			else if (H::but_menu_mas[4].isButtonHovered(xy)) {
 				currentMenuState = MENU;
+				H::cnt_open_card = 0;
+				H::num_plitki = 0;
 				display();
 			}
 			break;
 		case PLAY:
-			for (int i = 0; i < 16; ++i) {
+			for (int i = 0; i < H::num_plitki; ++i) {
 				if (H::but_plitki_mas[i].isButtonHovered(xy) && H::open_cards_mas[i] == 0) {
 					H::cur_num_pl1 = i;
 					draw_card(H::cur_num_pl1);
@@ -506,7 +590,7 @@ void MousePressed(int button, int state, int x, int y) {
 				}
 			}
 		case PLAY1:
-			for (int i = 0; i < 16; ++i) {
+			for (int i = 0; i < H::num_plitki; ++i) {
 				if (H::but_plitki_mas[i].isButtonHovered(xy) && H::cur_num_pl1 != i && H::open_cards_mas[i] == 0) {
 					H::cur_num_pl2 = i;
 					draw_card(H::cur_num_pl2);
@@ -514,7 +598,7 @@ void MousePressed(int button, int state, int x, int y) {
 						H::open_cards_mas[H::cur_num_pl1] = 1;
 						H::open_cards_mas[H::cur_num_pl2] = 1;
 						H::cnt_open_card += 2;
-						if (H::cnt_open_card == 16) {
+						if (H::cnt_open_card == H::num_plitki) {
 							currentMenuState = WIN;
 							display();
 							break;
@@ -576,7 +660,6 @@ int main(int argc, char** argv) {
 	glOrtho(-4, 4, -4, 4, -4, 1);
 
 	set_button();
-	shuffle();
 
 	glutDisplayFunc(display);
 	glutKeyboardFunc(keyboard);
